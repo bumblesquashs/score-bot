@@ -20,6 +20,7 @@ def get_score(user_discord_id: str) -> int | None:
   """, (user_discord_id,))
 
   result = cur.fetchone()
+  conn.commit()
   cur.close()
 
   return result[0]
@@ -41,6 +42,7 @@ def record_message(data: RecordMessageData) -> None:
       VALUES (?, ?, ?, ?)
   """, (data.points_receiver, data.points_giver, data.message_text, data.points))
 
+  conn.commit()
   cur.close()
 
   
@@ -63,6 +65,7 @@ def get_scoreboard() -> list[ScoreboardRow]:
       """)
 
       rows = cur.fetchall()
+      conn.commit()
 
       # Convert to ScoreboardRow objects
       return [
