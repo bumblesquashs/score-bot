@@ -1,6 +1,7 @@
 import re
 import database.db as database
 from discord import Message
+from discord import Embed
 from discord_helpers import mention_user
 
 PREFIX = "+"
@@ -40,19 +41,7 @@ class CommandHandler:
 
     async def scoreboard(self, message: Message): 
       scoreboard = database.get_scoreboard()
-       
-      await message.reply(f"""
-# Scoreboard
-
-{newline.join([f"{mention_user(row.user_discord_id)} — {row.total_score}" for row in scoreboard])}
-""")
-      
-
-
-       
-          
-      
-      
-      
-
-         
+      embed = Embed(title="Scoreboard", description="Desc", color=0x00ff00)
+      for row in scoreboard: 
+        embed.add_field(name=mention_user(row.user_discord_id), value=str(row.total_score), inline=False)
+      await message.reply(embed=embed)
