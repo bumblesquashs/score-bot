@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()  # reads variables from a .env file and sets them in os.environ
 
 BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
-DEBUG_THREAD_ONLY = True
+DEBUG_THREAD_ONLY = False
 
 intents = Intents.default()
 intents.messages = True
