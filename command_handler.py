@@ -41,7 +41,7 @@ class CommandHandler:
 
     async def scoreboard(self, message: Message): 
       scoreboard = database.get_scoreboard()
-      embed = Embed(title="Scoreboard", description="Desc", color=0x00ff00)
+      embed = Embed(title="Scoreboard", description="Desc", color=0xffffff)
       for row in scoreboard: 
-        embed.add_field(name=mention_user(row.user_discord_id), value=str(row.total_score), inline=False)
+        embed.add_field(name=mention_user(row.user_discord_id), value=str(row.total_score), inline=True)
       await message.reply(embed=embed)
