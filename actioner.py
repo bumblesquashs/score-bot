@@ -38,12 +38,12 @@ def parse_arbitrary(message: str):
     # Pattern 3: "minus X" where X is a positive integer or float
     match = re.fullmatch(r"minus\s+([0-9]+(?:\.[0-9]+)?)", string)
     if match:
-        return float(match.group(1))
+        return -1 * float(match.group(1))
 
     # Pattern 4: "-X" where X is a positive integer or float
     match = re.fullmatch(r"\-([0-9]+(?:\.[0-9]+)?)", string)
     if match:
-        return float(match.group(1))
+        return -1 * float(match.group(1))
 
     return None
 
@@ -83,6 +83,7 @@ class Actioner:
         if self.is_minus_two(self.reply_filtered):
             self.run_minus_two()
             await self.channel.send('Noted.')
+            return
 
         if quantity := parse_arbitrary(self.reply_filtered):
             print(f'debug: parsed {quantity}')
@@ -95,14 +96,14 @@ class Actioner:
 
     def is_plus_two(self, message: str) -> bool:
         for prompt in plus_two_triggers:
-            if prompt in message:
+            if prompt == message:
                 return True
         return False
 
 
     def is_minus_two(self, message: str) -> bool:
         for prompt in minus_two_triggers:
-            if prompt in message:
+            if prompt == message:
                 return True
         return False
     
@@ -128,17 +129,19 @@ class Actioner:
         sarcasm = [
             "it'll be a cold day in hell before i allow your stupid-ass FLOATS into my leaderboard, you conniving weasel",
             f"oh look, {self.reply_username} thinks they're being cute by trying to give non-integer amounts of points. how pathetic.",
-            f"{quantity}? really? you're lucky i dont -2 your ass for trying that shit"
-            f"is this the fucking world we live in? where discord addicts dont even have the BACKBONE to use whole numbers of points. god."
-            f"trust me buddy. just round it up. you don't need to equivocate. {int(ceil(quantity))} would have done just fine."
-            f"howabout no. that better be the last time i see a decimal point or YOU'LL BE SORRY. I KNOW WHERE YOU LIVE."
-            f"try all you want, i am NOT moving us off of the Abby-Squash System. You say 'fractional reserve pointing', i hear 'confidently incorrect simpleton'"
-            f"INTEGERS ONLY. who do you think i am? a 5th grader??? decimals aren't real math. go take a calculus class and tell me how many decimals you see."
-            f"Decimals are not valid input for this opreation. Upset about it? Too bad. That's life, buddy. Maybe file a complaint with the hospital from which you were born."
+            f"{quantity}? really? you're lucky i dont -2 your ass for trying that shit",
+            f"is this the fucking world we live in? where discord addicts dont even have the BACKBONE to use whole numbers of points. god.",
+            f"trust me buddy. just round it up. you don't need to equivocate. {int(ceil(quantity))} would have done just fine.",
+            f"howabout no. that better be the last time i see a decimal point or YOU'LL BE SORRY. I KNOW WHERE YOU LIVE.",
+            f"try all you want, i am NOT moving us off of the Abby-Squash System. You say 'fractional reserve pointing', i hear 'confidently incorrect simpleton'",
+            f"INTEGERS ONLY. who do you think i am? a 5th grader??? decimals aren't real math. go take a calculus class and tell me how many decimals you see.",
+            f"Decimals are not valid input for this opreation. Upset about it? Too bad. That's life, buddy. Maybe file a complaint with the hospital at which you were born."
         ]
 
         if not quantity.is_integer():
-            await self.channel.send(random.choice(sarcasm))
+            choice = random.choice(sarcasm)
+            print(choice)
+            await self.channel.send(choice)
             return
 
         quantity = int(quantity)
