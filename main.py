@@ -8,16 +8,13 @@ from dotenv import load_dotenv
 load_dotenv()  # reads variables from a .env file and sets them in os.environ
 
 BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
+DEBUG_THREAD_ONLY = True
 
 intents = Intents.default()
 intents.messages = True
 intents.message_content = True
 
-
-scores_path = 'scores.json'
-
-# update creating the client to include the intents
-
+# Configure bot to require message and message content intents
 class ScoreBot(Client):
     def __init__(self):
         super().__init__(intents=intents)
@@ -41,22 +38,19 @@ async def on_message(data):
 
     thread_or_channel_name = data.channel.name
 
-    if thread_or_channel_name not in allowed_channels:
-        print(f'not acting on channel: {thread_or_channel_name}')
+    if DEBUG_THREAD_ONLY and thread_or_channel_name not in allowed_channels:
+        print(f'Debug mode: not acting on channel: {thread_or_channel_name}')
         return
     
 
     if data.reference:
-        print("ITS A REPLY")
         # This is a reply, so we can check to see if there is score to add or remove
         original_message = await data.channel.fetch_message(data.reference.message_id)
 
         actioner = Actioner(reply_message=data, original_message=original_message)
         await actioner.action_message()
     
-    else:
-        print("NOT A REPLY")
-        
+    else:        
         # Check to see if there is a bot command, and run it if there is
         await command_handler.handle_command(data)
     
