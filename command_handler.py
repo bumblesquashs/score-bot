@@ -16,7 +16,7 @@ class CommandHandler:
     async def handle_command(self, message: Message) -> None:
       message_content = message.content
 
-      print(f"Message content: {message_content}")
+      # print(f"Message content: {message_content}")
 
       if not message_content.startswith(PREFIX):
          return
@@ -41,7 +41,9 @@ class CommandHandler:
 
     async def scoreboard(self, message: Message): 
       scoreboard = database.get_scoreboard()
-      embed = Embed(title="Scoreboard", description="Desc", color=0xffffff)
+      embed = Embed(title="Scoreboard", color=0xc5a2f0)
+
       for row in scoreboard: 
-        embed.add_field(name=mention_user(row.user_discord_id), value=str(row.total_score), inline=True)
+        embed.add_field(name='', value=f"{mention_user(row.user_discord_id)} — {row.total_score}", inline=False)
+      
       await message.reply(embed=embed)

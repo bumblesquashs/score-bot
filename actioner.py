@@ -7,6 +7,7 @@ from database.db_arguments import RecordMessageData
 
 plus_two_triggers = ['plus 2', '+2']
 minus_two_triggers = ['minus 2', '-2']
+zero_triggers = ['plus 0', 'minus 0', '+0', '-0']
 
 
 def parse_arbitrary(message: str):
@@ -86,8 +87,10 @@ class Actioner:
             return
 
         if quantity := parse_arbitrary(self.reply_filtered):
-            print(f'debug: parsed {quantity}')
             await self.run_arbitrary(quantity)
+
+        if self.reply_filtered in zero_triggers:
+            await self.channel.send('Noted...')
 
     
     async def action_react(self):
@@ -140,7 +143,6 @@ class Actioner:
 
         if not quantity.is_integer():
             choice = random.choice(sarcasm)
-            print(choice)
             await self.channel.send(choice)
             return
 
