@@ -7,7 +7,7 @@ from database.db_arguments import RecordMessageData
 
 plus_two_triggers = ['plus 2', '+2']
 minus_two_triggers = ['minus 2', '-2']
-zero_triggers = ['plus 0', 'minus 0', '+0', '-0']
+zero_triggers = ['plus 0', 'minus 0', '+0', '-0', '±0']
 
 
 def parse_arbitrary(message: str):
@@ -77,13 +77,11 @@ class Actioner:
 
     async def action_message(self):
         if self.is_plus_two(self.reply_filtered):
-            self.run_plus_two()
-            await self.channel.send('Noted.')
+            await self.run_plus_two()
             return
 
         if self.is_minus_two(self.reply_filtered):
-            self.run_minus_two()
-            await self.channel.send('Noted.')
+            await self.run_minus_two()
             return
 
         if quantity := parse_arbitrary(self.reply_filtered):
@@ -111,21 +109,31 @@ class Actioner:
         return False
     
 
-    def run_plus_two(self):
+    async def run_plus_two(self):
+        if self.can_give_points():
+            self.record_message(2)
+            await self.channel.send('Noted.')
+        else:
+            await self.channel.send(f"`{self.reply_username} is not in the sudoers file. This incident will be reported.`")
+
+    async def run_minus_two(self):
+        if self.can_give_points():
+            self.record_message(-2)
+            await self.channel.send('Noted.')
+        else:
+            await self.channel.send(f"`{self.reply_username} is not in the sudoers file. This incident will be reported.`")
+
+                
+    def can_give_points(self) -> bool:
+        return self.original_discord_id != self.reply_discord_id
+    
+
+    def record_message(self, points: int):
         database.record_message(
-                RecordMessageData(points=2, 
+                RecordMessageData(points=points, 
                                   points_giver=self.reply_discord_id, 
                                   points_receiver=self.original_discord_id, 
                                   message_text=self.original_message))
-
-
-    def run_minus_two(self):
-        database.record_message(
-                RecordMessageData(points=-2, 
-                                  points_giver=self.reply_discord_id, 
-                                  points_receiver=self.original_discord_id, 
-                                  message_text=self.original_message))
-        
 
     
     async def run_arbitrary(self, quantity: float):
