@@ -4,7 +4,7 @@ from discord import Message
 from discord import Embed
 from discord_helpers import mention_user
 
-PREFIX = "-"
+PREFIX = "+"
 COMMAND_REGEX = re.compile(r'\+(\w+)')
 newline = "\n"
 
