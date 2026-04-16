@@ -1,5 +1,5 @@
 import os
-from discord import Client, Intents
+from discord import Client, Intents, DMChannel, TextChannel
 from actioner import Actioner
 from command_handler import CommandHandler
 from dotenv import load_dotenv
@@ -9,6 +9,8 @@ load_dotenv()  # reads variables from a .env file and sets them in os.environ
 
 BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
 DEBUG_THREAD_ONLY = False
+
+SECRET_PROXY_MODE_USER_IDS = [467178363019329537, 609840104621735939]
 
 intents = Intents.default()
 intents.messages = True
@@ -36,12 +38,29 @@ async def on_message(data):
     if data.author == bot.user:
         return
 
+    if isinstance(data.channel, DMChannel):
+        # checks if its a DM, used for the "proxy" pass through feature
+        if data.author.id in SECRET_PROXY_MODE_USER_IDS:
+            # pass through!
+            parts = data.content.split(' ')
+            channel_name = parts[0]
+            rest = ' '.join(parts[1:])
+
+            channels = bot.get_all_channels()
+            for channel in channels:
+                print(channel.name)
+                if channel.name == channel_name:
+                    if isinstance(channel, TextChannel):
+                        print(f'sending to {channel.name}: {rest}')
+                        await channel.send(rest)
+                    return
+        return
+                
     thread_or_channel_name = data.channel.name
 
     if DEBUG_THREAD_ONLY and thread_or_channel_name not in allowed_channels:
         print(f'Debug mode: not acting on channel: {thread_or_channel_name}')
         return
-    
 
     if data.reference:
         # This is a reply, so we can check to see if there is score to add or remove

@@ -141,6 +141,23 @@ class Actioner:
             f"Decimals are not valid input for this opreation. Upset about it? Too bad. That's life, buddy. Maybe file a complaint with the hospital at which you were born."
         ]
 
+        whatever = [
+            "I'll allow it, but I prefer you give +2 or -2. I might not always be so kind.",
+            "I'll allow it, but I prefer you give +2 or -2. I might not always be so kind.",
+            "I'll allow it, but I prefer you give +2 or -2. I might not always be so kind.",
+            "I'll allow it, but I prefer you give +2 or -2. I might not always be so kind.",
+            "...whatever, fine.",
+            "I'll allow it, but next time, please use +2 or -2.",
+            "I'll allow it, but next time, please use +2 or -2.",
+            "I'll allow it, but next time, please use +2 or -2.",
+            "I'll allow it, but just this once.",
+            "I'll allow it, but only because I'm in a good mood.",
+            "Look. Boss doesn't like me giving points that aren't + 2 or -2. But I'll make an exception for you.",
+            "Fine. But you're on thin ice, buddy.",
+            "*siiiigh*  Noted."
+        ]
+        
+
         if not quantity.is_integer():
             choice = random.choice(sarcasm)
             await self.channel.send(choice)
@@ -158,8 +175,17 @@ class Actioner:
                                   points_receiver=self.original_discord_id, 
                                   message_text=self.original_message))
         
-        if random.random() > 0.4:
-            await self.channel.send("I'll allow it, but I prefer you give +2 or -2. I might not always be so kind.")
+        if random.random() > 0.6:
+            await self.channel.send(random.choice(whatever))
+            return
+        
+        if random.random() > 0.6 and quantity > 0:
+            await self.channel.send("You know what? Sure! Why not! +1 for you too.")
+            database.record_message(
+                RecordMessageData(points=1, 
+                                  points_giver=self.reply_discord_id, 
+                                  points_receiver=self.reply_discord_id, 
+                                  message_text=''))
             return
         
         if random.random() > 0.5:

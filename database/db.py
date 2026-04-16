@@ -6,6 +6,13 @@ DB_PATH = "database.sqlite3"
 
 conn = sqlite3.connect(DB_PATH)
 
+def get_scoreboard_count() -> int:    
+  cur = conn.cursor()
+  cur.execute("SELECT COUNT(*) FROM users")
+  
+  return cur.fetchone()[0]
+
+
 def get_score(user_discord_id: str) -> int | None:
   '''
   Find the current score for user with discord_id
@@ -47,21 +54,22 @@ def record_message(data: RecordMessageData) -> None:
 
   
 
-def get_scoreboard() -> list[ScoreboardRow]:
+def get_scoreboard(page: int) -> list[ScoreboardRow]:
   '''
   Returns a scoreboard of the 15 top users with the highest score
   '''
+  PAGE_SIZE = 15
   cur = conn.cursor()
 
   try:
-      cur.execute("""
+      cur.execute(f"""
           SELECT 
               points_receiver AS discord_id,
               COALESCE(SUM(points), 0) AS total_score
           FROM messages
           GROUP BY points_receiver
           ORDER BY total_score DESC
-          LIMIT 15;
+          LIMIT 15 OFFSET {PAGE_SIZE * (page - 1)};
       """)
 
       rows = cur.fetchall()
