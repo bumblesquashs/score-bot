@@ -67,12 +67,13 @@ class CommandHandler:
 
       for idx, row in enumerate(scoreboard): 
         adornation = ''
-        if page == 1 and idx == 0:
-            adornation = ' 🥇'
-        elif idx == 1:
-            adornation = ' 🥈'
-        elif idx == 2:
-            adornation = ' 🥉'
+        if page == 1:
+          if idx == 0:
+              adornation = ' 🥇'
+          elif idx == 1:
+              adornation = ' 🥈'
+          elif idx == 2:
+              adornation = ' 🥉'
         embed.add_field(name='', value=f"{mention_user(row.user_discord_id)} — {row.total_score}{adornation}", inline=False)
       
       embed.add_field(name='', value=f"To view other pages, use +scoreboard [page_number]")
