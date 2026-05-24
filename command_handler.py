@@ -9,6 +9,13 @@ PREFIX = "+"
 COMMAND_REGEX = re.compile(r'\+(\w+)')
 newline = "\n"
 
+PAGE_SIZE = 15
+ADORNATIONS = {
+    1: " 🥇",
+    2: " 🥈",
+    3: " 🥉"
+}
+
 class CommandHandler:
     """
     Handle different commands
@@ -52,7 +59,7 @@ class CommandHandler:
           pass
 
       scoreboard_count = database.get_scoreboard_count()
-      num_pages = math.ceil(scoreboard_count / 15)
+      num_pages = math.ceil(scoreboard_count / PAGE_SIZE)
       
       if num_pages < page:
          s = 's' if num_pages != 1 else ''
@@ -60,21 +67,22 @@ class CommandHandler:
          return
 
       scoreboard = database.get_scoreboard(page)
-   
 
-      embed = Embed(title="Scoreboard", color=0xc5a2f0)
-      embed.add_field(name='', value=f"Viewing page {page} of {num_pages}")
+      guild_name = message.guild.name if message.guild else "this server"
+      embed = Embed(title=f"Top mathletes in *{guild_name}*", color=0xc5a2f0)
+      if message.guild and message.guild.icon:
+        embed.set_thumbnail(url=message.guild.icon.url)
 
-      for idx, row in enumerate(scoreboard): 
-        adornation = ''
-        if page == 1:
-          if idx == 0:
-              adornation = ' 🥇'
-          elif idx == 1:
-              adornation = ' 🥈'
-          elif idx == 2:
-              adornation = ' 🥉'
-        embed.add_field(name='', value=f"{mention_user(row.user_discord_id)} — {row.total_score}{adornation}", inline=False)
-      
-      embed.add_field(name='', value=f"To view other pages, use +scoreboard [page_number]")
+      rank_start = (page - 1) * PAGE_SIZE
+      lines = [f"Viewing page {page} of {num_pages}\n"]
+
+      for idx, row in enumerate(scoreboard):
+        rank = rank_start + idx + 1
+        adornation = ADORNATIONS.get(rank, "")
+        lines.append(
+          f"`#{rank:>2}` {mention_user(row.user_discord_id)} - **{row.total_score}** {adornation}"
+        )
+
+      lines.append("\nTo view other pages, use `+scoreboard [page_number]`")
+      embed.description = "\n".join(lines)
       await message.reply(embed=embed)
