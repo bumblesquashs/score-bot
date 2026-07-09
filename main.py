@@ -11,6 +11,7 @@ BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
 DEBUG_THREAD_ONLY = False
 
 SECRET_PROXY_MODE_USER_IDS = [467178363019329537, 609840104621735939]
+PASS_THROUGH_GUILD = int(os.environ.get('PASS_THROUGH_GUILD_ID', 0)) # Better Columbia id
 
 intents = Intents.default()
 intents.messages = True
@@ -34,20 +35,25 @@ allowed_channels = ['score bot']
 
 # Whenever the bot sees a message
 @bot.event
-async def on_message(data):
-    if data.author == bot.user:
+async def on_message(message):
+    if message.author == bot.user:
+        return
+    
+    guild = message.guild
+    if guild is None:
         return
 
-    if isinstance(data.channel, DMChannel):
+    if isinstance(message.channel, DMChannel):
         # checks if its a DM, used for the "proxy" pass through feature
-        if data.author.id in SECRET_PROXY_MODE_USER_IDS:
+        if message.author.id in SECRET_PROXY_MODE_USER_IDS and PASS_THROUGH_GUILD != 0:
             # pass through!
-            parts = data.content.split(' ')
+            parts = message.content.split(' ')
             channel_name = parts[0]
             rest = ' '.join(parts[1:])
 
             channels = bot.get_all_channels()
-            for channel in channels:
+            better_columbia_channels = [c for c in channels if c.guild.id == PASS_THROUGH_GUILD]
+            for channel in better_columbia_channels:
                 print(channel.name)
                 if channel.name == channel_name:
                     if isinstance(channel, TextChannel):
@@ -56,22 +62,22 @@ async def on_message(data):
                     return
         return
                 
-    thread_or_channel_name = data.channel.name
+    thread_or_channel_name = message.channel.name
 
     if DEBUG_THREAD_ONLY and thread_or_channel_name not in allowed_channels:
         print(f'Debug mode: not acting on channel: {thread_or_channel_name}')
         return
 
-    if data.reference:
+    if message.reference:
         # This is a reply, so we can check to see if there is score to add or remove
-        original_message = await data.channel.fetch_message(data.reference.message_id)
+        original_message = await message.channel.fetch_message(message.reference.message_id)
 
-        actioner = Actioner(reply_message=data, original_message=original_message)
+        actioner = Actioner(reply_message=message, original_message=original_message, guild_id=guild.id)
         await actioner.action_message()
     
     else:        
         # Check to see if there is a bot command, and run it if there is
-        await command_handler.handle_command(data)
+        await command_handler.handle_command(message)
     
 
 bot.run(BOT_TOKEN)

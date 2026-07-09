@@ -59,9 +59,10 @@ class Actioner:
     Run actions based on message and react events
     """
 
-    def __init__(self, original_message, reply_message):
+    def __init__(self, original_message, reply_message, guild_id: int):
 
         self.channel = reply_message.channel
+        self.guild_id = guild_id
 
         self.original_message = original_message.content
         self.reply_message = reply_message.content
@@ -133,7 +134,8 @@ class Actioner:
                 RecordMessageData(points=points, 
                                   points_giver=self.reply_discord_id, 
                                   points_receiver=self.original_discord_id, 
-                                  message_text=self.original_message))
+                                  message_text=self.original_message,
+                                  server_id=self.guild_id))
 
     
     async def run_arbitrary(self, quantity: float):
@@ -152,17 +154,17 @@ class Actioner:
         whatever = [
             "I'll allow it, but I prefer you give +2 or -2. I might not always be so kind.",
             "I'll allow it, but I prefer you give +2 or -2. I might not always be so kind.",
-            "I'll allow it, but I prefer you give +2 or -2. I might not always be so kind.",
-            "I'll allow it, but I prefer you give +2 or -2. I might not always be so kind.",
             "...whatever, fine.",
-            "I'll allow it, but next time, please use +2 or -2.",
-            "I'll allow it, but next time, please use +2 or -2.",
             "I'll allow it, but next time, please use +2 or -2.",
             "I'll allow it, but just this once.",
             "I'll allow it, but only because I'm in a good mood.",
             "Look. Boss doesn't like me giving points that aren't + 2 or -2. But I'll make an exception for you.",
             "Fine. But you're on thin ice, buddy.",
-            "*siiiigh*  Noted."
+            "*siiiigh*  Noted.",
+            "*glares at you* Don't play with me.",
+            "Ok.",
+            "ok.",
+            "Ok. yep. got anything else for me?"
         ]
         
 
@@ -181,9 +183,10 @@ class Actioner:
                 RecordMessageData(points=quantity, 
                                   points_giver=self.reply_discord_id, 
                                   points_receiver=self.original_discord_id, 
-                                  message_text=self.original_message))
+                                  message_text=self.original_message,
+                                  server_id=self.guild_id))
         
-        if random.random() > 0.6:
+        if random.random() > 0.7:
             await self.channel.send(random.choice(whatever))
             return
         
@@ -193,7 +196,8 @@ class Actioner:
                 RecordMessageData(points=1, 
                                   points_giver=self.reply_discord_id, 
                                   points_receiver=self.reply_discord_id, 
-                                  message_text=''))
+                                  message_text='',
+                                  server_id=self.guild_id))
             return
         
         if random.random() > 0.5:
@@ -201,7 +205,8 @@ class Actioner:
                 RecordMessageData(points=-1, 
                                   points_giver=self.reply_discord_id, 
                                   points_receiver=self.reply_discord_id, 
-                                  message_text=''))
+                                  message_text='',
+                                  server_id=self.guild_id))
             await self.channel.send("I'll allow it, but since it wasn't +2 or -2, It's gonna cost ya. -1 point.")
             return
         
@@ -211,7 +216,8 @@ class Actioner:
                 RecordMessageData(points=-2, 
                                   points_giver=self.reply_discord_id, 
                                   points_receiver=self.reply_discord_id, 
-                                  message_text=''))
+                                  message_text='',
+                                  server_id=self.guild_id))
 
 
         

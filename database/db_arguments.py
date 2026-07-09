@@ -15,3 +15,4 @@ class RecordMessageData:
     points_receiver: str
     message_text: str
     points: int
+    server_id: int

@@ -6,14 +6,17 @@ DB_PATH = "database.sqlite3"
 
 conn = sqlite3.connect(DB_PATH)
 
-def get_scoreboard_count() -> int:    
+def get_scoreboard_count(server_id: int | None) -> int:    
   cur = conn.cursor()
-  cur.execute("SELECT COUNT(*) FROM users")
+  if server_id is None:
+    cur.execute("SELECT COUNT(*) FROM users")
+  else:
+    cur.execute("SELECT COUNT(*) FROM users WHERE server_id = ?", (server_id,))
   
   return cur.fetchone()[0]
 
 
-def get_score(user_discord_id: str) -> int | None:
+def get_score(user_discord_id: str, server_id: int | None) -> int | None:
   '''
   Find the current score for user with discord_id
 
@@ -21,10 +24,16 @@ def get_score(user_discord_id: str) -> int | None:
   '''
   cur = conn.cursor()
   
-  cur.execute("""
-      SELECT SUM(score) FROM messages
-      WHERE user_id = ?
-  """, (user_discord_id,))
+  if server_id is None:
+     cur.execute("""
+        SELECT SUM(score) FROM messages
+        WHERE user_id = ?
+    """, (user_discord_id,))
+  else:
+    cur.execute("""
+        SELECT SUM(score) FROM messages
+        WHERE user_id = ? AND server_id = ?
+    """, (user_discord_id, server_id))
 
   result = cur.fetchone()
   conn.commit()
@@ -41,20 +50,20 @@ def record_message(data: RecordMessageData) -> None:
   '''
   cur = conn.cursor()
 
-  ensure_user_exists(cur, data.points_receiver)
+  ensure_user_exists(cur, data.points_receiver, data.server_id)
 
   # Insert message with points
   cur.execute("""
-      INSERT INTO messages (points_receiver, points_giver, message_text, points)
-      VALUES (?, ?, ?, ?)
-  """, (data.points_receiver, data.points_giver, data.message_text, data.points))
+      INSERT INTO messages (points_receiver, points_giver, message_text, points, server_id)
+      VALUES (?, ?, ?, ?, ?)
+  """, (data.points_receiver, data.points_giver, data.message_text, data.points, data.server_id))
 
   conn.commit()
   cur.close()
 
   
 
-def get_scoreboard(page: int) -> list[ScoreboardRow]:
+def get_scoreboard(server_id: int | None, page: int) -> list[ScoreboardRow]:
   '''
   Returns a scoreboard of the 15 top users with the highest score
   '''
@@ -62,15 +71,27 @@ def get_scoreboard(page: int) -> list[ScoreboardRow]:
   cur = conn.cursor()
 
   try:
-      cur.execute(f"""
-          SELECT 
-              points_receiver AS discord_id,
-              COALESCE(SUM(points), 0) AS total_score
-          FROM messages
-          GROUP BY points_receiver
-          ORDER BY total_score DESC
-          LIMIT 15 OFFSET {PAGE_SIZE * (page - 1)};
-      """)
+      if server_id is not None:
+        cur.execute(f"""
+            SELECT 
+                points_receiver AS discord_id,
+                COALESCE(SUM(points), 0) AS total_score
+            FROM messages
+            WHERE server_id = ?
+            GROUP BY points_receiver
+            ORDER BY total_score DESC
+            LIMIT 15 OFFSET {PAGE_SIZE * (page - 1)};
+        """, (server_id,))
+      else:
+         cur.execute(f"""
+            SELECT 
+                points_receiver AS discord_id,
+                COALESCE(SUM(points), 0) AS total_score
+            FROM messages
+            GROUP BY points_receiver
+            ORDER BY total_score DESC
+            LIMIT 15 OFFSET {PAGE_SIZE * (page - 1)};
+        """)
 
       rows = cur.fetchall()
       conn.commit()
@@ -85,13 +106,13 @@ def get_scoreboard(page: int) -> list[ScoreboardRow]:
       cur.close()
   
 
-def ensure_user_exists(cur: sqlite3.Cursor, discord_id: str) -> None:
+def ensure_user_exists(cur: sqlite3.Cursor, discord_id: str, server_id: int) -> None:
   '''
   Creates a user if one does not already exist
   '''
   cur.execute("""
-      INSERT OR IGNORE INTO users (discord_id)
-      VALUES (?)
-  """, (discord_id,))
+      INSERT OR IGNORE INTO users (discord_id, server_id)
+      VALUES (?, ?)
+  """, (discord_id, server_id))
 
 

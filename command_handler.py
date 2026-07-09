@@ -41,7 +41,21 @@ class CommandHandler:
       await message.reply("Pong!")
 
     async def scoreboard(self, message: Message):
+
+      guild = message.guild
+
+      if guild is None:
+         return 
+      
       chunks = message.content.split(' ')
+
+
+      is_global: bool = len(chunks) > 1 and chunks[-1].lower() == 'global'
+
+      # for page number processing, we need to remove the global text
+      if is_global:
+         chunks = [c for c in chunks if c != 'global']
+
       page = 1
       if len(chunks) > 1:
         try:
@@ -51,7 +65,9 @@ class CommandHandler:
         except TypeError:
           pass
 
-      scoreboard_count = database.get_scoreboard_count()
+      server_id = None if is_global else guild.id
+
+      scoreboard_count = database.get_scoreboard_count(server_id)
       num_pages = math.ceil(scoreboard_count / 15)
       
       if num_pages < page:
@@ -59,10 +75,11 @@ class CommandHandler:
          await message.reply(f'b-b-but i only have a total of {num_pages} page{s} to show u... 🥀')
          return
 
-      scoreboard = database.get_scoreboard(page)
+      scoreboard = database.get_scoreboard(server_id, page)
    
+      title = "Global Scoreboard" if is_global else "Scoreboard for this server"
 
-      embed = Embed(title="Scoreboard", color=0xc5a2f0)
+      embed = Embed(title=title, color=0xc5a2f0)
       embed.add_field(name='', value=f"Viewing page {page} of {num_pages}")
 
       for idx, row in enumerate(scoreboard): 

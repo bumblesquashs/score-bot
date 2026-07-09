@@ -8,7 +8,8 @@ def migrate_up(conn: sqlite3.Connection):
     cur = conn.cursor()
     cur.executescript("""
         CREATE TABLE IF NOT EXISTS users (
-            discord_id TEXT NOT NULL UNIQUE PRIMARY KEY
+            discord_id TEXT NOT NULL UNIQUE PRIMARY KEY,
+            server_id INTEGER
         );
         
         CREATE TABLE IF NOT EXISTS messages (
@@ -17,12 +18,15 @@ def migrate_up(conn: sqlite3.Connection):
             points_receiver VARCHAR(64) NOT NULL,
             message_text TEXT NOT NULL,
             points INTEGER,
+            server_id INTEGER,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                       
-          FOREIGN KEY (points_receiver) REFERENCES users(discord_id)
-            ON DELETE CASCADE
-            ON UPDATE CASCADE
+            FOREIGN KEY (points_receiver) REFERENCES users(discord_id)
+              ON DELETE CASCADE
+              ON UPDATE CASCADE
         );
+                      
+        
     """)
     conn.commit()
 
@@ -34,7 +38,6 @@ def migrate_down(conn: sqlite3.Connection):
         DROP TABLE IF EXISTS users;
     """)
     conn.commit()
-
 
 
 def main():
