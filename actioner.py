@@ -186,7 +186,7 @@ class Actioner:
                                   message_text=self.original_message,
                                   server_id=self.guild_id))
         
-        if random.random() > 0.7:
+        if random.random() > 0.5:
             await self.channel.send(random.choice(whatever))
             return
         
