@@ -9,6 +9,37 @@ plus_two_triggers = ['plus 2', '+2']
 minus_two_triggers = ['minus 2', '-2']
 zero_triggers = ['plus 0', 'minus 0', '+0', '-0', '±0']
 
+hexdumps = [
+    '"i used to collect worms as a kid and set them on fire" - justin'
+    '"so sinful but oh-so silky-smooth" - brian',
+    '"this sausage farmers wrap is so soft and warm it feels like i\'m eating a living person" - abby',
+    '"you\'re gonna have to try a little harder if you wanna make me moan" - kaiden',
+    '"i think you need more lesbians in your life" - patrick johnstone to angela',
+    '"I didn\'t realize there was a city called Nelson" - ruofan',
+    '"it\'s my god given right to drink piss" - watchy"',
+    '"i wanna be a queer trauma-informed land speculator" - angela',
+    '"kaiden why do you want to bomb bc childrens hospital?" - michael',
+    '"boycott metro vancouver by taking a dump on the sidewalk" - bowie',
+    '"had two singles a triple a walk a flyout a groundout and one ground ball taken straight to my groin" - will'
+    '"many of you in this server would be better suited to a life of scavenging debris off the ocean floor with some sort of tentacle appendage" - ahasan',
+]
+
+def special_hexdump(input: str):
+    width = 8
+    try:
+        raw = input.encode("utf-8")
+    except UnicodeEncodeError as e:
+        raise ValueError(f"String is not valid UTF-8: {e}") from e
+    
+    lines = []
+    for offset in range(0, len(raw), width):
+        chunk = raw[offset:offset + width]
+        lines.append(" ".join(f"{b:02x}" for b in chunk).ljust(width * 3 - 1))
+    hexdump = "\n".join(lines).strip()
+    result = f'```{hexdump}```'
+    return result
+
+
 
 def parse_arbitrary(message: str):
     """
@@ -59,7 +90,7 @@ class Actioner:
     Run actions based on message and react events
     """
 
-    def __init__(self, original_message, reply_message, guild_id: int):
+    def __init__(self, original_message, reply_message, guild_id: int, is_bc: bool):
 
         self.channel = reply_message.channel
         self.guild_id = guild_id
@@ -75,6 +106,8 @@ class Actioner:
 
         self.original_discord_id = str(original_message.author.id)
         self.reply_discord_id = str(reply_message.author.id)
+
+        self.is_bc = is_bc
 
     async def action_message(self):
         if self.is_plus_two(self.reply_filtered):
@@ -96,18 +129,31 @@ class Actioner:
         pass
 
 
-    def is_plus_two(self, message: str) -> bool:
-        for prompt in plus_two_triggers:
-            if prompt == message:
-                return True
+    def match_prompt(self, message: str, prompt: str) -> bool:
+        position = message.find(prompt)
+        if position == -1:
+            # message doesnt contain prompt
+            return False
+        if position == 0:
+            # prompt starts at the beginning of the message, accept this
+            return True
+        # prompt is later in the message, ignore
         return False
+        
+        
+
+    def is_plus_two(self, message: str) -> bool:
+        match = False
+        for prompt in plus_two_triggers:
+            match |= self.match_prompt(message, prompt)
+        return match
 
 
     def is_minus_two(self, message: str) -> bool:
+        match = False
         for prompt in minus_two_triggers:
-            if prompt == message:
-                return True
-        return False
+            match |= self.match_prompt(message, prompt)
+        return match
     
 
     async def run_plus_two(self):
@@ -158,13 +204,14 @@ class Actioner:
             "I'll allow it, but next time, please use +2 or -2.",
             "I'll allow it, but just this once.",
             "I'll allow it, but only because I'm in a good mood.",
+            "I'll allow it, but only because I feel bad for you.",
             "Look. Boss doesn't like me giving points that aren't + 2 or -2. But I'll make an exception for you.",
             "Fine. But you're on thin ice, buddy.",
             "*siiiigh*  Noted.",
+            "*siiiiiiiiiiiigh*  Noted.",
             "*glares at you* Don't play with me.",
             "Ok.",
             "ok.",
-            "Ok. yep. got anything else for me?"
         ]
         
 
@@ -185,6 +232,10 @@ class Actioner:
                                   points_receiver=self.original_discord_id, 
                                   message_text=self.original_message,
                                   server_id=self.guild_id))
+
+        if random.random() > 0.9 and self.is_bc:
+            await self.channel.send(special_hexdump(random.choice(hexdumps)))
+            return
         
         if random.random() > 0.5:
             await self.channel.send(random.choice(whatever))

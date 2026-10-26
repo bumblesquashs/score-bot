@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()  # reads variables from a .env file and sets them in os.environ
 
 BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
-DEBUG_THREAD_ONLY = False
+DEBUG_THREAD_ONLY = True
 
 SECRET_PROXY_MODE_USER_IDS = [467178363019329537, 609840104621735939]
 PASS_THROUGH_GUILD = int(os.environ.get('PASS_THROUGH_GUILD_ID', 0)) # Better Columbia id
@@ -54,7 +54,6 @@ async def on_message(message):
             channels = bot.get_all_channels()
             better_columbia_channels = [c for c in channels if c.guild.id == PASS_THROUGH_GUILD]
             for channel in better_columbia_channels:
-                print(channel.name)
                 if channel.name == channel_name:
                     if isinstance(channel, TextChannel):
                         print(f'sending to {channel.name}: {rest}')
@@ -72,7 +71,7 @@ async def on_message(message):
         # This is a reply, so we can check to see if there is score to add or remove
         original_message = await message.channel.fetch_message(message.reference.message_id)
 
-        actioner = Actioner(reply_message=message, original_message=original_message, guild_id=guild.id)
+        actioner = Actioner(reply_message=message, original_message=original_message, guild_id=guild.id, is_bc=(guild.id == PASS_THROUGH_GUILD))
         await actioner.action_message()
     
     else:        
