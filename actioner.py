@@ -57,23 +57,13 @@ def parse_arbitrary(message: str):
     """
     string = message.strip().lower()
 
-    # Pattern 1: "plus X" where X is a positive integer or float
-    match = re.fullmatch(r"plus\s+([0-9]+(?:\.[0-9]+)?)", string)
-    if match:
-        return float(match.group(1))
-
-    # Pattern 2: "+X" where X is a positive integer or float
-    match = re.fullmatch(r"\+([0-9]+(?:\.[0-9]+)?)", string)
+    # Pattern 1: "plus X" or "+x" where X is a positive integer or float
+    match = re.match(r"(?:\+\s*|plus\s+)([0-9]+(?:\.[0-9]+)?)(?=\s|$)", string)
     if match:
         return float(match.group(1))
     
-    # Pattern 3: "minus X" where X is a positive integer or float
-    match = re.fullmatch(r"minus\s+([0-9]+(?:\.[0-9]+)?)", string)
-    if match:
-        return -1 * float(match.group(1))
-
-    # Pattern 4: "-X" where X is a positive integer or float
-    match = re.fullmatch(r"\-([0-9]+(?:\.[0-9]+)?)", string)
+    # Pattern 2: "minus X" or "-x" where X is a positive integer or float
+    match = re.match(r"(?:\-\s*|minus\s+)([0-9]+(?:\.[0-9]+)?)(?=\s|$)", string)
     if match:
         return -1 * float(match.group(1))
 
