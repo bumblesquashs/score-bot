@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()  # reads variables from a .env file and sets them in os.environ
 
 BOT_TOKEN = os.environ['DISCORD_BOT_TOKEN']
-DEBUG_THREAD_ONLY = True
+DEBUG_THREAD_ONLY = False
 
 SECRET_PROXY_MODE_USER_IDS = [467178363019329537, 609840104621735939]
 PASS_THROUGH_GUILD = int(os.environ.get('PASS_THROUGH_GUILD_ID', 0)) # Better Columbia id
