@@ -10,13 +10,13 @@ minus_two_triggers = ['minus 2', '-2']
 zero_triggers = ['plus 0', 'minus 0', '+0', '-0', '±0']
 
 hexdumps = [
-    '"i used to collect worms as a kid and set them on fire" - justin'
+    '"i used to collect worms as a kid and set them on fire" - justin',
     '"so sinful but oh-so silky-smooth" - brian',
     '"this sausage farmers wrap is so soft and warm it feels like i\'m eating a living person" - abby',
     '"you\'re gonna have to try a little harder if you wanna make me moan" - kaiden',
     '"i think you need more lesbians in your life" - patrick johnstone to angela',
     '"I didn\'t realize there was a city called Nelson" - ruofan',
-    '"it\'s my god given right to drink piss" - watchy"',
+    '"it\'s my god given right to drink piss" - watchy',
     '"i wanna be a queer trauma-informed land speculator" - angela',
     '"kaiden why do you want to bomb bc childrens hospital?" - michael',
     '"boycott metro vancouver by taking a dump on the sidewalk" - bowie',
