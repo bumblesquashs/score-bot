@@ -40,9 +40,6 @@ async def on_message(message):
         return
     
     guild = message.guild
-    if guild is None:
-        return
-
     if isinstance(message.channel, DMChannel):
         # checks if its a DM, used for the "proxy" pass through feature
         if message.author.id in SECRET_PROXY_MODE_USER_IDS and PASS_THROUGH_GUILD != 0:
@@ -56,11 +53,13 @@ async def on_message(message):
             for channel in better_columbia_channels:
                 if channel.name == channel_name:
                     if isinstance(channel, TextChannel):
-                        print(f'sending to {channel.name}: {rest}')
                         await channel.send(rest)
                     return
         return
-                
+    
+    if guild is None:
+        return
+            
     thread_or_channel_name = message.channel.name
 
     if DEBUG_THREAD_ONLY and thread_or_channel_name not in allowed_channels:
